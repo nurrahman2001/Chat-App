@@ -9,10 +9,11 @@ import {
 } from "react-icons/ri";
 import blank_image from "../assets/blank_image.jpg";
 import { useUser } from "../context/UserContext";
+import { host } from "../utils/APIRoutes";
 
 const Sidebar = ({ setSelectedComponent, selectedComponent }) => {
   const { user } = useUser();
-  const baseUrl = "http://localhost:5000";
+  const baseUrl = host;
   const userAvatar = user?.avatarImage
     ? `${baseUrl}/${user.avatarImage.replace(/^\/+/, "")}`
     : blank_image;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { host } from "../utils/APIRoutes";
 
 const UserContext = createContext();
 export const useUser = () => useContext(UserContext);
@@ -20,7 +21,7 @@ export const UserProvider = ({ children }) => {
       const decoded = jwtDecode(token);
       const { userId } = decoded;
       // Fetch main user data
-      const userRes = await axios.get(`http://localhost:5000/api/auth/user/${userId}`, {
+      const userRes = await axios.get(`${host}/api/auth/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -30,7 +31,7 @@ export const UserProvider = ({ children }) => {
       const contactEntries = userData.contacts || [];
       const contactDataPromises = contactEntries.map(async (entry) => {
         try {
-          const res = await axios.get(`http://localhost:5000/api/auth/user/${entry.contactId}`, {
+          const res = await axios.get(`${host}/api/auth/user/${entry.contactId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

@@ -4,6 +4,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import blank_image from "../assets/blank_image.jpg";
 import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import { host } from "../utils/APIRoutes";
 
 export default function Settings() {
     const [openSection, setOpenSection] = useState(null);
@@ -14,7 +15,7 @@ export default function Settings() {
         setOpenSection(openSection === section ? null : section);
     };
 
-    const baseUrl = "http://localhost:5000";
+    const baseUrl = host;
     const userAvatar = user?.avatarImage
         ? `${baseUrl}/${user.avatarImage.replace(/^\/+/, "")}`
         : blank_image;

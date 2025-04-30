@@ -123,6 +123,7 @@ export const ChatPage = () => {
       username: incomingCall.name,
       avatarImage: incomingCall.avatar,
     };
+    console.log(callerContact)
 
     navigate("/call", {
       state: {
@@ -134,7 +135,7 @@ export const ChatPage = () => {
         },
         callType: incomingCall.callType,
         offer: incomingCall.offer,
-        isIncoming: true  
+        isIncoming: true
       },
     });
 

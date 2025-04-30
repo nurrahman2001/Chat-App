@@ -8,45 +8,27 @@ import { useUser } from "../context/UserContext";
 
 const socket = io(host);
 
-export const CallPage = ({ handleEndCall }) => {
+export const CallPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const currentUser = useUser();
 
   const { currentChat, callType, offer, isIncoming } = location.state || {};
-
   const [isCalling, setIsCalling] = useState(false);
   const [callStatus, setCallStatus] = useState("");
   const [localStream, setLocalStream] = useState(null);
   const [callDuration, setCallDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [speakerOn, setSpeakerOn] = useState(true);
+
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const peerConnection = useRef(null);
   const timerRef = useRef(null);
 
-  useEffect(() => {
-    if (!currentChat) {
-      navigate("/");
-      return;
-    }
-
-    if (isIncoming && offer) {
-      // Handle incoming call
-      handleIncomingCall();
-    } else if (currentChat && callType) {
-      // Make outgoing call
-      startCall();
-    }
-
-    // Clean up on unmount
-    return () => {
-      cleanupCall();
-    };
-  }, [currentChat, callType, isIncoming, offer]);
 
   const cleanupCall = () => {
+
     clearInterval(timerRef.current);
     if (localStream) {
       localStream.getTracks().forEach(track => track.stop());
@@ -58,7 +40,7 @@ export const CallPage = ({ handleEndCall }) => {
 
   const startCall = async () => {
     try {
-      
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: callType === "video",
@@ -73,14 +55,13 @@ export const CallPage = ({ handleEndCall }) => {
       const peer = new RTCPeerConnection({
         iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
       });
-      peerConnection.current = peer;
 
-      // Add tracks to peer connection
+      peerConnection.current = peer;
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
       // Handle remote tracks
       peer.ontrack = (event) => {
-        console.log("Remote track received:", event.track.kind);
+        console.log("Remote track received type:", event.track.kind);
         if (remoteVideoRef.current && event.streams && event.streams[0]) {
           remoteVideoRef.current.srcObject = event.streams[0];
           console.log("Remote stream connected to video element");
@@ -134,6 +115,32 @@ export const CallPage = ({ handleEndCall }) => {
       alert("Could not access camera/microphone. Please check permissions.");
       navigate(-1);
     }
+  };
+
+  const endCall = () => {
+    clearInterval(timerRef.current);
+    setIsCalling(false);
+    setCallStatus("");
+
+    // Notify other party about call ending
+    const recipientId = currentChat.userId || currentChat.contactId;
+
+    if (recipientId) {
+      socket.emit("call-ended", { to: recipientId });
+    }
+
+    // Clean up resources
+    if (peerConnection.current) {
+      peerConnection.current.close();
+      peerConnection.current = null;
+    }
+
+    if (localStream) {
+      localStream.getTracks().forEach((track) => track.stop());
+      setLocalStream(null);
+    }
+
+    navigate(-1);
   };
 
   const handleIncomingCall = async () => {
@@ -192,7 +199,6 @@ export const CallPage = ({ handleEndCall }) => {
         }
       };
 
-      // Set remote description from offer
       await peer.setRemoteDescription(new RTCSessionDescription(offer));
 
       // Create answer
@@ -218,40 +224,14 @@ export const CallPage = ({ handleEndCall }) => {
   const startCallTimer = () => {
     // Clear any existing timer
     clearInterval(timerRef.current);
-
-    // Reset call duration
     setCallDuration(0);
 
-    // Start new timer
     timerRef.current = setInterval(() => {
       setCallDuration((prev) => prev + 1);
     }, 1000);
   };
 
-  const endCall = () => {
-    clearInterval(timerRef.current);
-    setIsCalling(false);
-    setCallStatus("");
 
-    // Notify other party about call ending
-    const recipientId = currentChat.userId || currentChat.contactId;
-    if (recipientId) {
-      socket.emit("call-ended", { to: recipientId });
-    }
-
-    // Clean up resources
-    if (peerConnection.current) {
-      peerConnection.current.close();
-      peerConnection.current = null;
-    }
-
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
-      setLocalStream(null);
-    }
-
-    navigate(-1);
-  };
 
   const toggleMute = () => {
     if (localStream) {
@@ -265,8 +245,28 @@ export const CallPage = ({ handleEndCall }) => {
 
   const toggleSpeaker = () => {
     setSpeakerOn((prev) => !prev);
-    // Note: Web browsers don't have direct speaker control API
+    // Web browsers don't have direct speaker control API
   };
+
+  useEffect(() => {
+    if (!currentChat) {
+      navigate("/");
+      return;
+    }
+
+    if (isIncoming && offer) {
+      // Handle incoming call
+      handleIncomingCall();
+    } else if (currentChat && callType) {
+      // Make outgoing call
+      startCall();
+    }
+
+    // Clean up on unmount
+    return () => {
+      cleanupCall();
+    };
+  }, [currentChat, callType, isIncoming, offer]);
 
   // Set up socket event listeners
   useEffect(() => {
