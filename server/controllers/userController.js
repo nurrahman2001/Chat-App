@@ -1,6 +1,6 @@
 const User = require("../model/userModel");
 const Message = require("../model/messageModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");

@@ -29,18 +29,16 @@ app.use(express.json());
 app.use("/api/auth", userRoutes);
 app.use("/api/messages", messagesRoutes);
 
-// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("DB Connection Successful"))
   .catch((err) => console.log(err.message));
 
-// Start Server
-const server = app.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT,'0.0.0.0', () => {
   console.log(`Server Started on Port ${process.env.PORT}`);
 });
 
-// Error Handling Middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     console.error("Multer error:", err);
@@ -55,7 +53,7 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Socket.IO Setup
+// Socket setup for real-time processing
 const io = socket(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -87,7 +85,7 @@ io.on("connection", (socket) => {
   });
 
 
-  // Typing Indicator
+  // Typing indicator
   socket.on("typing", ({ from, to }) => {
     const receiverSocket = global.onlineUsers.get(to);
     if (receiverSocket) {
@@ -102,7 +100,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // WebRTC Call Signaling
+  // WebRTC call signaling setup
   socket.on("call-user", ({ to, from, name, avatar, callType, offer }) => {
     const sendUserSocket = global.onlineUsers.get(to);
     if (sendUserSocket) {
