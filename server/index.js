@@ -19,7 +19,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://chat-app-client-five-coral.vercel.app/",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -56,7 +56,7 @@ app.use((err, req, res, next) => {
 // Socket setup for real-time processing
 const io = socket(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://chat-app-client-five-coral.vercel.app/",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
