@@ -17,13 +17,28 @@ if (!fs.existsSync(uploadDir)) {
 }
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.use(
-  cors({
-    origin: "https://chat-app-client-five-coral.vercel.app/",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+
+
+const allowedOrigins = [
+  "https://chat-app-delta-ebon.vercel.app",
+  "https://chat-app-git-main-nur-rahmans-projects-294c2e4f.vercel.app",
+  "https://chat-938wpehmz-nur-rahmans-projects-294c2e4f.vercel.app/",
+  "http://localhost:5173", // for local dev 
+  
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 app.use("/api/auth", userRoutes);
@@ -55,8 +70,14 @@ app.use((err, req, res, next) => {
 
 // Socket setup for real-time processing
 const io = socket(server, {
-  cors: {
-    origin: "https://chat-app-client-five-coral.vercel.app/",
+ cors: {
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
