@@ -44,6 +44,9 @@ app.use(express.json());
 app.use("/api/auth", userRoutes);
 app.use("/api/messages", messagesRoutes);
 
+console.log("Loaded Mongo URL:", process.env.MONGO_URL);
+
+
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("DB Connection Successful"))
