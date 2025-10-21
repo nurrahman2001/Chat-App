@@ -74,13 +74,7 @@ app.use((err, req, res, next) => {
 // Socket setup for real-time processing
 const io = socket(server, {
  cors: {
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -89,22 +83,32 @@ const io = socket(server, {
 global.onlineUsers = new Map();
 
 io.on("connection", (socket) => {
+  console.log("New socket connection established:", socket.id);
   global.chatSocket = socket;
 
   // Add user to online map and broadcast to all
   socket.on("add-user", (userId) => {
+    console.log("User connected:", userId, "Socket ID:", socket.id);
     global.onlineUsers.set(userId, socket.id);
+    console.log("Online users:", Array.from(global.onlineUsers.keys()));
     io.emit("online-users", Array.from(global.onlineUsers.keys()));
   });
 
   // Send message
   socket.on("send-msg", (data) => {
+    console.log("Received send-msg event:", data);
     const sendUserSocket = global.onlineUsers.get(data.to);
+    console.log("Target user socket:", sendUserSocket);
     if (sendUserSocket) {
       io.to(sendUserSocket).emit("msg-recieve", {
         from: data.from,
         message: data.message,
+        fileUrl: data.fileUrl,
+        fileType: data.fileType,
       });
+      console.log("Message sent to user:", data.to);
+    } else {
+      console.log("User not online:", data.to);
     }
   });
 

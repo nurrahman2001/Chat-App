@@ -1,4 +1,3 @@
-import React from "react";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import dummyUser from "../assets/blank_image.jpg";
 import { host } from "../utils/APIRoutes";
@@ -14,7 +13,7 @@ export default function CurrentUserDetails({ currentChat, onClose }) {
                     <MdOutlineKeyboardArrowRight size={22} />
                 </button>
             </div>
-            <div className="mt-auto flex flex-col items-center mt-4 border-b p-4">
+            <div className="flex flex-col items-center mt-4 border-b p-4">
                 <img src={currentChat.avatarImage ? `${host}${currentChat.avatarImage}` : dummyUser} alt="User Avatar" className="w-16 h-16 rounded-full cursor-pointer object-cover" />
                 <span className="text-green-500 text-xs mt-2">Online</span>
             </div>

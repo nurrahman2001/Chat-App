@@ -17,7 +17,6 @@ export default function ChatHeader({
     setIsCallModalOpen,
     callType,
     isOnline
-
 }) {
     const [isEllipsisOpen, setIsEllipsisOpen] = useState(false);
     const navigate = useNavigate();
@@ -50,17 +49,14 @@ export default function ChatHeader({
         }
     };
 
-    // const handleLougout = () => {
-    //     localStorage.removeItem("chat-app-token");
-    //     navigate("/login");
-    // };
+
 
     if (!currentChat) return null;
 
     return (
         <>
             {/* Header */}
-            <div className="flex fixed max-w-[71%] w-full justify-between items-center border-b px-6 py-4 bg-white  z-10">
+            <div className="flex fixed max-w-full md:max-w-[71%] w-full justify-between items-center border-b px-6 py-4 bg-white z-10">
                 <div className="flex items-center gap-3">
                     <img
                         src={
@@ -85,7 +81,8 @@ export default function ChatHeader({
 
                     </div>
                 </div>
-                <div className="flex items-center gap-10 text-gray-500">
+                <div className="flex items-center gap-4 text-gray-500">
+                    {/*
                     <RiSearchLine
                         size={20}
                         className="cursor-pointer hover:text-gray-700"
@@ -98,6 +95,7 @@ export default function ChatHeader({
                             className="border px-2 py-1 rounded-md outline-none"
                         />
                     )}
+                    */}
                     <RiPhoneLine
                         size={20}
                         className="cursor-pointer hover:text-gray-700"
