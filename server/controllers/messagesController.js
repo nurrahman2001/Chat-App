@@ -28,7 +28,13 @@ module.exports.addMessage = async (req, res, next) => {
 
     const data = await messageModel.create(newMessage);
 
-    if (data) return res.json({ msg: "Message added successfully." });
+    if (data) {
+      const response = { msg: "Message added successfully." };
+      if (fileData) {
+        response.fileUrl = fileData.url;
+      }
+      return res.json(response);
+    }
     return res.json({ msg: "Failed to add message to DB" });
   } catch (ex) {
     next(ex);

@@ -34,21 +34,31 @@ export default function ChatContainer({ currentChat, currentUser, socket, isOnli
 
   // Message Handlers 
   const handleSendMsg = async (msg) => {
-    if (!msg) return;
+    if (!msg || !socket.current) return;
 
-    await axios.post(sendMessageRoute, {
-      from: currentUser.userId,
-      to: currentChat.userId,
-      message: msg,
-    });
+    try {
+      await axios.post(sendMessageRoute, {
+        from: currentUser.userId,
+        to: currentChat.userId,
+        message: msg,
+      });
 
-    socket.current.emit("send-msg", {
-      from: currentUser.userId,
-      to: currentChat.userId,
-      message: msg,
-    });
+      console.log("Sending message via socket:", {
+        from: currentUser.userId,
+        to: currentChat.userId,
+        message: msg,
+      });
 
-    setMessages((prev) => [...prev, { fromSelf: true, message: msg }]);
+      socket.current.emit("send-msg", {
+        from: currentUser.userId,
+        to: currentChat.userId,
+        message: msg,
+      });
+
+      setMessages((prev) => [...prev, { fromSelf: true, message: msg }]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   const handleSendFile = async (file, msg = "") => {
@@ -146,30 +156,44 @@ export default function ChatContainer({ currentChat, currentUser, socket, isOnli
   useEffect(() => {
     if (!socket.current) return;
 
-    socket.current.on("typing", ({ from }) => {
-      if (from === currentChat.userId) setIsTypingFromOtherUser(true);
-    });
+    const handleUserTyping = (from) => {
+      if (from === currentChat?.userId) {
+        setIsTypingFromOtherUser(true);
+      }
+    };
 
-    socket.current.on("stop-typing", ({ from }) => {
-      if (from === currentChat.userId) setIsTypingFromOtherUser(false);
-    });
+    const handleUserStopTyping = (from) => {
+      if (from === currentChat?.userId) {
+        setIsTypingFromOtherUser(false);
+      }
+    };
+
+    socket.current.on("user-typing", handleUserTyping);
+    socket.current.on("user-stop-typing", handleUserStopTyping);
+
+    return () => {
+      if (socket.current) {
+        socket.current.off("user-typing", handleUserTyping);
+        socket.current.off("user-stop-typing", handleUserStopTyping);
+      }
+    };
   }, [currentChat]);
 
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
--
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (activeModalIndex !== null && !event.target.closest(".message-action-modal")) {
-        setActiveModalIndex(null);
-      }
-    };
+  -
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (activeModalIndex !== null && !event.target.closest(".message-action-modal")) {
+          setActiveModalIndex(null);
+        }
+      };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [activeModalIndex]);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [activeModalIndex]);
 
   if (!currentChat) {
     return (
@@ -209,8 +233,14 @@ export default function ChatContainer({ currentChat, currentUser, socket, isOnli
       />
 
       {/* Input */}
-      <div className="fixed bottom-0 max-w-[71%] w-full bg-white border-t shadow-md z-10 px-4 py-2">
-        <ChatInput handleSendMsg={handleSendMsg} handleSendFile={handleSendFile} />
+      <div className="fixed bottom-0 max-w-full w-full md:max-w-[71%] bg-white border-t shadow-md z-10 px-4 py-2">
+        <ChatInput
+          handleSendMsg={handleSendMsg}
+          handleSendFile={handleSendFile}
+          socket={socket}
+          currentChat={currentChat}
+          currentUser={currentUser}
+        />
       </div>
 
       {/* Sidebar */}

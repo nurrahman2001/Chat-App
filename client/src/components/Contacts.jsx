@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useUser } from "../context/UserContext";
 import dummyUser from "../assets/blank_image.jpg";
@@ -35,9 +35,44 @@ export default function Contacts({ changeChat }) {
     changeChat(contact);
   };
 
-  if (loading) {
-    return <div className="p-4 text-center">Loading contacts...</div>;
-  }
+if (loading) {
+  return (
+    <div className="p-4 bg-gray-100 h-screen flex flex-col">
+      <h2 className="text-xl font-bold mb-4">Contacts</h2>
+
+      {/* Search skeleton */}
+      <div className="relative mb-4 bg-gray-200 rounded-md border">
+        <div className="w-full h-10 rounded-md bg-gray-300 animate-pulse"></div>
+      </div>
+
+      {/* Skeleton contact list */}
+      <div
+        className="flex-1 overflow-y-auto space-y-4 pr-2"
+        style={{ maxHeight: "calc(100vh - 150px)" }}
+      >
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex items-center p-2 bg-gray-100 rounded-md animate-pulse"
+          >
+            {/* Avatar skeleton */}
+            <div className="w-10 h-10 rounded-full bg-gray-300"></div>
+
+            {/* Text skeleton */}
+            <div className="ml-4 flex-1">
+              <div className="flex justify-between items-center">
+                <div className="w-24 h-4 bg-gray-300 rounded"></div>
+                <div className="w-12 h-3 bg-gray-300 rounded"></div>
+              </div>
+              <div className="w-40 h-3 mt-2 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
   return (
     <div className="p-4 bg-gray-100 h-screen flex flex-col">
@@ -47,7 +82,7 @@ export default function Contacts({ changeChat }) {
       <div className="relative mb-4 bg-gray-200 rounded-md border">
         <input
           type="text"
-          placeholder="Search by name or email"
+          placeholder="Search users..."
           className="w-full p-2 pl-10 rounded-md bg-gray-200 focus:outline-none"
           value={searchTerm}
           onChange={handleSearchChange}

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaTimes, FaVolumeUp, FaMicrophoneSlash, FaMicrophone } from "react-icons/fa";
 import { io } from "socket.io-client";
